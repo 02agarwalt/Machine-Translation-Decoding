@@ -26,24 +26,22 @@ for word in set(sum(french,())):
 def get_possible_options(f, h):
     output = []
     if (h.last_on_bit is not None) and (0 in h.bitmap[0:h.last_on_bit]):
-        start = h.bitmap[0:h.last_on_bit].index(0)
-        end = start + h.bitmap[0:h.last_on_bit].count(0)
-        if f[start:end] in tm:
-            for phrase in tm[f[start:end]]:
-                output.append((phrase, start, end-1))
+        ind = h.bitmap[0:h.last_on_bit].index(0)
+        if f[ind:(ind+1)] in tm:
+            for phrase in tm[f[ind:(ind+1)]]:
+                output.append((phrase, ind, h.last_on_bit))
     else:
         last_on_bit = h.last_on_bit
         if h.last_on_bit is None:
             last_on_bit = -1
-        for i in range(last_on_bit+1, len(f)):
-            for j in range(i+1, len(f)+1):
-                if f[i:j] in tm:
-                    for phrase in tm[f[i:j]]:
-                        output.append((phrase, i, j-1))
+        for i in range(1, 3):
+            if f[(last_on_bit+i):(last_on_bit+i+1)] in tm:
+                for phrase in tm[f[(last_on_bit+i):(last_on_bit+i+1)]]:
+                    output.append((phrase, last_on_bit+i, last_on_bit+i))
     return output
 
 sys.stderr.write("Decoding %s...\n" % (opts.input,))
-for f in french:
+for num, f in enumerate(french):
     # The following code implements a non-monotone decoding
     # algorithm (one that incorporates swapping in the target phrases).
     # Hence all hypotheses in stacks[i] represent translations of 
@@ -53,22 +51,18 @@ for f in french:
     stacks = [{} for _ in f] + [{}]
     stacks[0][lm.begin()] = initial_hypothesis
     for i, stack in enumerate(stacks[:-1]):
-        for h in sorted(stack.itervalues(),key=lambda h: -h.logprob)[:len(f)**len(f)]: # prune, used to be opts.s
+        for h in sorted(stack.itervalues(),key=lambda h: -h.logprob)[:opts.s]: # prune, used to be opts.s
             possible_options = get_possible_options(f, h)
-            for (phrase, start, end) in possible_options:
+            for (phrase, ind, last_on_bit) in possible_options:
                 logprob = h.logprob + phrase.logprob
                 lm_state = h.lm_state
                 for word in phrase.english.split():
                     (lm_state, word_logprob) = lm.score(lm_state, word)
                     logprob += word_logprob
-                    logprob += lm.end(lm_state) if end == len(f)-1 else 0.0
                 new_bitmap = h.bitmap[:]
-                for k in range(start, end+1):
-                    new_bitmap[k] = 1
+                new_bitmap[ind] = 1
+                logprob += lm.end(lm_state) if (0 not in new_bitmap) else 0.0
                 num_translated_words = new_bitmap.count(1)
-                last_on_bit = len(new_bitmap)-1
-                while new_bitmap[last_on_bit] == 0:
-                    last_on_bit -= 1
                 new_hypothesis = hypothesis(logprob, lm_state, h, phrase, new_bitmap, last_on_bit)
                 if lm_state not in stacks[num_translated_words] or stacks[num_translated_words][lm_state].logprob < logprob: # second case is recombination
                     stacks[num_translated_words][lm_state] = new_hypothesis 
