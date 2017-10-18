@@ -44,7 +44,7 @@ for num, f in enumerate(french):
     # Hence all hypotheses in stacks[i] represent translations of 
     # any i words of the input sentence.
     hypothesis = namedtuple("hypothesis", "logprob, lm_state, predecessor, phrase, bitmap, last_on_bit, estimated_value")
-    initial_hypothesis = hypothesis(0.0, lm.begin(), None, None, [0]*len(f), None)
+    initial_hypothesis = hypothesis(0.0, lm.begin(), None, None, [0]*len(f), None, 0.0)
     sys.stderr.write("Sentence " + str(num))
 
     future_cost = {}
@@ -56,7 +56,7 @@ for num, f in enumerate(french):
           for phrase in tm[f[start:end]]:
             if phrase.logprob < future_cost[(start, end)]:
               future_cost[(start, end)] = phrase.logprob
-        for i in range(start, end):
+        for i in range(start+1, end):
           if future_cost[(start, i)] + future_cost[(i, end)] < future_cost[(start, end)]:
             future_cost[(start, end)] = future_cost[(start, i)] + future_cost[(i, end)]
     
