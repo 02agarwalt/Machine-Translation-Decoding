@@ -12,6 +12,7 @@ optparser.add_option("-n", "--num_sentences", dest="num_sents", default=sys.maxi
 optparser.add_option("-k", "--translations-per-phrase", dest="k", default=1, type="int", help="Limit on number of translations to consider per phrase (default=1)")
 optparser.add_option("-s", "--stack-size", dest="s", default=1, type="int", help="Maximum stack size (default=1)")
 optparser.add_option("-v", "--verbose", dest="verbose", action="store_true", default=False,  help="Verbose mode (default=off)")
+optparser.add_option("-d", "--reorder_limit", dest="d", default=6, type="int", help="Limit on the amount of reordering (default=6)")
 opts = optparser.parse_args()[0]
 
 tm = models.TM(opts.tm, opts.k)
@@ -30,7 +31,7 @@ def get_possible_options(f, h):
       last_on_bit = -1
     for i in range(0, len(f)):
       for j in range(i+1, len(f)+1):
-        if h.bitmap[i:j] == [0]*(j-i):
+        if (h.bitmap[i:j] == [0]*(j-i)) and (i - last_on_bit <= opts.d):
           if f[i:j] in tm:
             for phrase in tm[f[i:j]]:
               output.append((phrase, i, j-1, max(last_on_bit, j-1)))
