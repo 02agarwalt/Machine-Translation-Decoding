@@ -52,7 +52,7 @@ for num, f in enumerate(french):
     # any i words of the input sentence.
     hypothesis = namedtuple("hypothesis", "logprob, lm_state, predecessor, phrase, bitmap, last_on_bit")
     initial_hypothesis = hypothesis(0.0, lm.begin(), None, None, [0]*len(f), None)
-    print("Sentence " + str(num))
+    sys.stderr.write("Sentence " + str(num))
     stacks = [{} for _ in f] + [{}]
     stacks[0][lm.begin()] = initial_hypothesis
     for i, stack in enumerate(stacks[:-1]):
