@@ -9,9 +9,9 @@ for s in "${s_arr[@]}"
 do
     for k in "${k_arr[@]}"
     do
-        output_file="output_${script_id}s-${s}_k-${k}.txt"
+        output_file="output_${script_id}_s-${s}_k-${k}.txt"
         python ${file_name} -s ${s} -k ${k} > ${output_file}
-        python compute-model-score < ${output_file}
+        # python compute-model-score < ${output_file}
     done
 done
 
