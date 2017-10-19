@@ -12,7 +12,7 @@ optparser.add_option("-n", "--num_sentences", dest="num_sents", default=sys.maxi
 optparser.add_option("-k", "--translations-per-phrase", dest="k", default=1, type="int", help="Limit on number of translations to consider per phrase (default=1)")
 optparser.add_option("-s", "--stack-size", dest="s", default=1, type="int", help="Maximum stack size (default=1)")
 optparser.add_option("-v", "--verbose", dest="verbose", action="store_true", default=False,  help="Verbose mode (default=off)")
-optparser.add_option("-d", "--reorder_limit", dest="d", default=6, type="int", help="Limit on the amount of reordering (default=6)")
+optparser.add_option("-d", "--reorder_limit", dest="d", default=sys.maxint, type="int", help="Limit on the amount of reordering (default=no limit)")
 opts = optparser.parse_args()[0]
 
 tm = models.TM(opts.tm, opts.k)
@@ -53,9 +53,13 @@ for num, f in enumerate(french):
         end = start + length
         future_cost[(start, end)] = -sys.maxint
         if f[start:end]in tm:
-          for phrase in tm[f[start:end]]:
-            if phrase.logprob > future_cost[(start, end)]:
-              future_cost[(start, end)] = phrase.logprob
+          phrase = max(tm[f[start:end]], key=lambda x: x.logprob)
+          if phrase.logprob > future_cost[(start, end)]:
+            future_cost[(start, end)] = phrase.logprob
+          lm_state = ()
+          for word in phrase.english.split():
+            (lm_state, word_logprob) = lm.score(lm_state, word)
+            future_cost[(start, end)] += word_logprob
         for i in range(start+1, end):
           if future_cost[(start, i)] + future_cost[(i, end)] > future_cost[(start, end)]:
             future_cost[(start, end)] = future_cost[(start, i)] + future_cost[(i, end)]
