@@ -34,14 +34,14 @@ def get_possible_options(f, h):
         last_on_bit = h.last_on_bit
         if h.last_on_bit is None:
             last_on_bit = -1
-        for i in range(2, 3):
+        for i in range(2, 3): ## why from 2 to 3?
             if f[(last_on_bit+i):(last_on_bit+i+1)] in tm:
                 for phrase in tm[f[(last_on_bit+i):(last_on_bit+i+1)]]:
-                    output.append((phrase, last_on_bit+i, last_on_bit+i))
+                    output.append((phrase, last_on_bit+i, last_on_bit+i)) ### added +1 to last term?
         for i in range(last_on_bit+2,len(f)+1):
             if f[(last_on_bit+1):i] in tm:
                 for phrase in tm[f[(last_on_bit+1):i]]:
-                    output.append((phrase, last_on_bit+1, i-1))
+                    output.append((phrase, last_on_bit+1, i-1)) ### why the minus 1?
     return output
 
 sys.stderr.write("Decoding %s...\n" % (opts.input,))
@@ -66,9 +66,8 @@ for num, f in enumerate(french):
                     logprob += word_logprob
                 new_bitmap = h.bitmap[:]
                 new_bitmap[ind] = 1
-                for x in range(ind, last_on_bit):
+                for x in range(ind, last_on_bit+1):
                     new_bitmap[x] = 1
-                new_bitmap[last_on_bit] = 1
                 num_translated_words = new_bitmap.count(1)
                 logprob += lm.end(lm_state) if num_translated_words == len(f) else 0.0
                 new_hypothesis = hypothesis(logprob, lm_state, h, phrase, new_bitmap, last_on_bit)
