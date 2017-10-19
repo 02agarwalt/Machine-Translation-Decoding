@@ -51,13 +51,13 @@ for num, f in enumerate(french):
     for length in range(1, len(f)+1):
       for start in range(0, len(f)+1-length):
         end = start + length
-        future_cost[(start, end)] = sys.maxint
+        future_cost[(start, end)] = -sys.maxint
         if f[start:end]in tm:
           for phrase in tm[f[start:end]]:
-            if phrase.logprob < future_cost[(start, end)]:
+            if phrase.logprob > future_cost[(start, end)]:
               future_cost[(start, end)] = phrase.logprob
         for i in range(start+1, end):
-          if future_cost[(start, i)] + future_cost[(i, end)] < future_cost[(start, end)]:
+          if future_cost[(start, i)] + future_cost[(i, end)] > future_cost[(start, end)]:
             future_cost[(start, end)] = future_cost[(start, i)] + future_cost[(i, end)]
     
     stacks = [{} for _ in f] + [{}]
