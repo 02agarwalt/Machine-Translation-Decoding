@@ -31,7 +31,7 @@ def get_possible_options(f, h):
       last_on_bit = -1
     for i in range(0, len(f)):
       for j in range(i+1, len(f)+1):
-        if (h.bitmap[i:j] == [0]*(j-i)) and (i - last_on_bit <= opts.d):
+        if (h.bitmap[i:j] == [0]*(j-i)) and (h.bitmap[:i].count(0) < opts.d):
           if f[i:j] in tm:
             for phrase in tm[f[i:j]]:
               output.append((phrase, i, j-1, max(last_on_bit, j-1)))
@@ -99,7 +99,7 @@ for num, f in enumerate(french):
 
                 estimated_value = logprob + cost_estimate
                 new_hypothesis = hypothesis(logprob, lm_state, h, phrase, new_bitmap, last_on_bit, estimated_value)
-                if lm_state not in stacks[num_translated_words] or stacks[num_translated_words][lm_state].logprob < logprob: # second case is recombination
+                if lm_state not in stacks[num_translated_words] or stacks[num_translated_words][lm_state].estimated_value < estimated_value: # second case is recombination
                     stacks[num_translated_words][lm_state] = new_hypothesis 
     winner = max(stacks[-1].itervalues(), key=lambda h: h.logprob)
     def extract_english(h): 

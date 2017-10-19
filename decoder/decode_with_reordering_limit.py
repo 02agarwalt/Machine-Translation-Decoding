@@ -31,7 +31,7 @@ def get_possible_options(f, h):
       last_on_bit = -1
     for i in range(0, len(f)):
       for j in range(i+1, len(f)+1):
-        if (h.bitmap[i:j] == [0]*(j-i)) and (i - last_on_bit <= opts.d):
+        if (h.bitmap[i:j] == [0]*(j-i)) and (h.bitmap[:i].count(0) < opts.d):
           if f[i:j] in tm:
             for phrase in tm[f[i:j]]:
               output.append((phrase, i, j-1, max(last_on_bit, j-1)))
